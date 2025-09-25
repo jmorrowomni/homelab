@@ -1,0 +1,3 @@
+# meta-data file for Ubuntu autoinstall
+instance-id: ubuntu-template
+local-hostname: ubuntu-template
