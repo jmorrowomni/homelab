@@ -35,3 +35,11 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Ignore Packer secrets file
+credentials.pkrvars.hcl
+
+# Ignore build artifacts
+build/
+*.iso
+*.log
