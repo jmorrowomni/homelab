@@ -1,0 +1,11 @@
+---
+podman_containers: []
+# Example:
+# podman_containers:
+#   - name: nginx
+#     image: docker.io/library/nginx:latest
+#     state: started
+#     ports:
+#       - "8080:80"
+#     volumes:
+#       - /srv/nginx/html:/usr/share/nginx/html:Z

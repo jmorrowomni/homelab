@@ -1,0 +1,9 @@
+---
+- name: Restart Podman
+  ansible.builtin.systemd:
+    name: podman
+    state: restarted
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true

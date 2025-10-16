@@ -1,0 +1,93 @@
+---
+# --- Ensure presence of podman
+- name: Installing podman
+  ansible.builtin.package:
+    name: "podman"
+    state: present
+
+- name: Copy registry files
+  ansible.builtin.copy:
+    src: registries.conf
+    dest: /etc/containers/registries.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Restart Podman
+
+# --- Ensure images and containers ---
+
+- name: Ensure required Podman images are present
+  containers.podman.podman_image:
+    name: "{{ item.image }}"
+  loop: "{{ podman_containers }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Ensure required Podman containers are running
+  containers.podman.podman_container:
+    name: "{{ item.name }}"
+    image: "{{ item.image }}"
+    state: "{{ item.state | default('started') }}"
+    env: "{{ item.env | default(omit) }}"
+    ports: "{{ item.ports | default(omit) }}"
+    volumes: "{{ item.volumes | default(omit) }}"
+  loop: "{{ podman_containers }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: Restart Podman
+
+# --- Generate and enable systemd units ---
+
+- name: Generate systemd unit files for containers
+  ansible.builtin.command:
+    cmd: "podman generate systemd --name --files {{ item.name }}"
+    chdir: /etc/systemd/system
+  args:
+    creates: "/etc/systemd/system/container-{{ item.name }}.service"
+  loop: "{{ podman_containers | selectattr('generate_systemd', 'defined') | selectattr('generate_systemd', 'equalto', true) | list }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: Reload systemd
+
+- name: Enable and start systemd-managed containers
+  ansible.builtin.systemd:
+    name: "container-{{ item.name }}"
+    enabled: true
+    state: started
+  loop: "{{ podman_containers | selectattr('generate_systemd', 'defined') | selectattr('generate_systemd', 'equalto', true) | list }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# --- Cleanup old containers ---
+
+- name: Get list of all existing Podman containers
+  ansible.builtin.command: podman ps -a --format "{{ '{{.Names}}' }}"
+  register: podman_existing
+  changed_when: false
+
+- name: Remove containers not defined in podman_containers
+  containers.podman.podman_container:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ podman_existing.stdout_lines | difference(podman_containers | map(attribute='name') | list) }}"
+  when: podman_existing.stdout_lines | length > 0
+  loop_control:
+    label: "{{ item }}"
+  notify: Restart Podman
+
+# --- Cleanup old images ---
+
+- name: Get list of all existing Podman images
+  ansible.builtin.command: podman images --format "{{ '{{.Repository}}:{{.Tag}}' }}"
+  register: podman_images
+  changed_when: false
+
+- name: Remove images not used by declared containers
+  containers.podman.podman_image:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ podman_images.stdout_lines | difference(podman_containers | map(attribute='image') | list) }}"
+  when: podman_images.stdout_lines | length > 0
+  loop_control:
+    label: "{{ item }}"
