@@ -5,3 +5,4 @@ provider "proxmox" {
   insecure  = true
 
 }
+
