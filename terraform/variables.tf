@@ -26,7 +26,7 @@ variable "pve_token_id" {
 }
 
 variable "pve_token_secret" {
-  description = "Proxmox API TOken Value"
+  description = "Proxmox API Token Value"
   sensitive   = true
 }
 
