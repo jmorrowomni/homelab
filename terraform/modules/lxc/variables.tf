@@ -16,7 +16,7 @@ variable "vmid" {
 }
 
 variable "force" {
-  type = bool
+  type    = bool
   default = false
 }
 

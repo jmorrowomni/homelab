@@ -12,34 +12,40 @@ locals {
 }
 
 resource "proxmox_virtual_environment_container" "proxmox_lxc" {
-  vm_id        = var.vmid
-  node_name    = var.target_node
-  description  = "Terraform-managed LXC container"
-  tags         = ["terraform"]
+  vm_id       = var.vmid
+  node_name   = var.target_node
+  description = "Terraform-managed LXC container"
+  tags        = ["terraform"]
+
+  unprivileged = true
 
   initialization {
     hostname = var.hostname
-    
+
     ip_config {
       ipv4 {
         address = var.ip_address
         gateway = var.ip_gateway
       }
     }
-    
+
     user_account {
-      keys     = [file("${var.ssh_public_key_path}")]
+      keys = [file("${var.ssh_public_key_path}")]
     }
 
 
+
+  }
+  network_interface {
+    name = "veth0"
   }
 
   operating_system {
-    template_file_id = "local-lvm:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+    template_file_id = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
     type             = "ubuntu"
   }
 
-    memory {
+  memory {
     dedicated = 1024
   }
 
@@ -54,7 +60,7 @@ resource "proxmox_virtual_environment_container" "proxmox_lxc" {
 
   features {
     nesting = true
-    keyctl  = true
+    #    keyctl  = true
   }
 
   start_on_boot = true
@@ -62,18 +68,20 @@ resource "proxmox_virtual_environment_container" "proxmox_lxc" {
 
 # Wait until SSH is up
 resource "null_resource" "wait_for_ssh" {
-  provisioner "local-exec" {
-    command = <<EOT
-      for i in {1..30}; do
-        nc -zv 192.168.5.${var.vmid} 22 && exit 0
-        echo "Waiting for SSH on 192.168.5.${var.vmid}..."
-        sleep 5
-      done
-      echo "SSH not available after 150s" && exit 1
-    EOT
+  provisioner "remote-exec" {
+    inline = ["/usr/bin/cloud-init status --wait; echo ${var.hostname} is online at ${local.vm_ip}!"]
+
+    connection {
+      agent       = false
+      host        = local.vm_ip
+      private_key = file(var.ssh_private_key_path)
+      type        = "ssh"
+      user        = "root"
+    }
   }
   depends_on = [proxmox_virtual_environment_container.proxmox_lxc]
 }
+
 
 # Install Docker or Podman inside the LXC
 resource "null_resource" "install_container_runtime" {
@@ -87,7 +95,7 @@ resource "null_resource" "install_container_runtime" {
   }
 
   # Choose between no runtime, Docker, or Podman
-  
+
   provisioner "remote-exec" {
     inline = concat(
       [
