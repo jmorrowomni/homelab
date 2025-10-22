@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    restart: unless-stopped
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"       # Web UI
+      - "443:443/tcp"     # optional
+    volumes:
+      - ./adguard/data:/opt/adguardhome/work
+      - ./adguard/config:/opt/adguardhome/conf
+    networks:
+      - dns_net
+
+  unbound:
+    image: mvance/unbound:latest
+    container_name: unbound
+    restart: unless-stopped
+    ports:
+      - "5353:53/udp"
+    volumes:
+      - ./unbound/unbound.conf:/etc/unbound/unbound.conf:ro
+      - ./unbound/root.hints:/etc/unbound/root.hints:ro
+    networks:
+      - dns_net
+
+  doh-server:
+    image: reddit/doh-server:latest
+    container_name: doh
+    restart: unless-stopped
+    environment:
+      - UPSTREAM_DNS=unbound:5353
+    ports:
+      - "443:443/tcp"
+    networks:
+      - dns_net
+
+networks:
+  dns_net:
+    driver: bridge
