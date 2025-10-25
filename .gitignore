@@ -44,3 +44,6 @@ credentials.pkr.hcl
 build/
 *.iso
 *.log
+
+# Ignore Ansible host variables
+host_vars/
