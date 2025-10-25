@@ -1,0 +1,32 @@
+---
+- name: Ensure base directories exist
+  file:
+    path: "{{ docker_dns_base_path }}/{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - adguard/data
+    - adguard/config
+    - unbound
+    - stubby
+
+- name: Copy static files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ docker_dns_base_path }}/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - { src: "docker-compose.yml", dest: "docker-compose.yml" }
+    - { src: "unbound.conf", dest: "unbound/unbound.conf" }
+    - { src: "root.hints", dest: "unbound/root.hints" }
+    - { src: "stubby.yml", dest: "stubby/stubby.yml"}
+
+- name: Deploy DNS stack using Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ docker_dns_base_path }}"
+    state: present
+    recreate: always

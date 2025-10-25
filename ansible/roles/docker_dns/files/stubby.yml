@@ -1,0 +1,12 @@
+resolution_type: GETDNS_RESOLUTION_STUB
+
+listen_addresses:
+  - 0.0.0.0@853
+
+dns_transport_list:
+  - GETDNS_TRANSPORT_TLS
+
+upstream_recursive_servers:
+  - address_data: unbound
+    tls_port: 53
+    tls_auth_name: "unbound"

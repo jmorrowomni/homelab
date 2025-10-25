@@ -1,0 +1,44 @@
+services:
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    restart: unless-stopped
+    network_mode: host
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "8080:80/tcp"       # Web UI
+      - "4443:443/tcp"     # optional Web UI over HTTPS
+    volumes:
+      - ./adguard/data:/opt/adguardhome/work
+      - ./adguard/config:/opt/adguardhome/conf
+    depends_on:
+      - unbound
+
+  unbound:
+    image: mvance/unbound:latest
+    container_name: unbound
+    restart: unless-stopped
+    volumes:
+      - ./unbound/unbound.conf:/etc/unbound/unbound.conf:ro
+      - ./unbound/root.hints:/etc/unbound/root.hints:ro
+    networks:
+      - dns_net
+
+  dot-server:
+    image: mvance/stubby:latest
+    container_name: dot
+    restart: unless-stopped
+    ports:
+      - "853:853/tcp"
+      - "853:853/udp"
+    volumes:
+      - ./stubby/stubby.yml:/usr/local/etc/stubby/stubby.yml:ro
+    networks:
+      - dns_net
+    depends_on:
+      - unbound
+
+networks:
+  dns_net:
+    driver: bridge

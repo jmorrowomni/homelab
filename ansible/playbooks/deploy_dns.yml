@@ -1,0 +1,4 @@
+- hosts: dnshost
+  become: true
+  roles:
+    - role: docker_dns
