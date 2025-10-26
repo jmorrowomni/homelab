@@ -4,7 +4,7 @@ module "proxmox_lxc" {
 
   vmid                 = 202
   hostname             = "adguard"
-  target_node          = "pve2"
+  target_node          = "gambit"
   ssh_public_key_path  = var.ssh_public_key_path
   ssh_private_key_path = var.ssh_private_key_path
 

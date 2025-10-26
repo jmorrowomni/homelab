@@ -14,7 +14,7 @@ variable "name" {
 
 variable "target_node" {
   type    = string
-  default = "pve2"
+  default = "gambit"
 }
 
 variable "pool" {
