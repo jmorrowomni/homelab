@@ -42,7 +42,7 @@ Node 2
 - **VMs:**
   - podman (running)
 - **LXC Containers:**
-  - Nextcloud (In Progress)
+  - Nextcloud (Need to migrate to docker with separate containers)
   - Adguard
 
 
@@ -53,10 +53,13 @@ The technologies currently in use are:
 * Ansible
 * Podman
 * Docker
+* Wireguard
+* CloudFlare Tunnels
 
 # To-Do List 
   This list is not comprehensive, as I'm sure I'm not thinking of things
   - [ ] Configure certificate management
+  - [ ] Deploy Vaultwarden
   - [ ] Deploy HomeAssistant
   - [ ] Deploy Immich
   - [ ] Deploy Unifi
