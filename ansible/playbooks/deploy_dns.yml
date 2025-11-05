@@ -1,3 +1,4 @@
+---
 - hosts: dnshost
   become: true
   roles:

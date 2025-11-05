@@ -1,6 +1,6 @@
 ---
 - name: Ensure base directories exist
-  file:
+  ansible.builtin.file:
     path: "{{ docker_dns_base_path }}/{{ item }}"
     state: directory
     owner: root
@@ -13,7 +13,7 @@
     - stubby
 
 - name: Copy static files
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ docker_dns_base_path }}/{{ item.dest }}"
     owner: root
@@ -23,7 +23,7 @@
     - { src: "docker-compose.yml", dest: "docker-compose.yml" }
     - { src: "unbound.conf", dest: "unbound/unbound.conf" }
     - { src: "root.hints", dest: "unbound/root.hints" }
-    - { src: "stubby.yml", dest: "stubby/stubby.yml"}
+    - { src: "stubby.yml", dest: "stubby/stubby.yml" }
 
 - name: Deploy DNS stack using Docker Compose
   community.docker.docker_compose_v2:
