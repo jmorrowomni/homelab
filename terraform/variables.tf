@@ -34,3 +34,27 @@ variable "bios" {
   type    = string
   default = "seabios"
 }
+
+variable "account_id" {
+  type = string
+}
+
+variable "zone_id" {
+  type = string
+}
+
+variable "cf_admin_api_token" {
+  type      = string
+  sensitive = true
+}
+
+variable "domain_name" {
+  description = "The domain name managed in Cloudflare"
+  type        = string
+}
+
+variable "allowed_ip_ranges" {
+  description = "List of CIDR ranges allowed to use the token"
+  type        = list(string)
+  default     = []
+}

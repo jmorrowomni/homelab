@@ -6,3 +6,8 @@ provider "proxmox" {
 
 }
 
+provider "cloudflare" {
+
+  api_token = var.cf_admin_api_token
+
+}
