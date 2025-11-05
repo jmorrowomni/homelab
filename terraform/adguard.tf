@@ -1,4 +1,4 @@
-module "proxmox_lxc" {
+module "adguard" {
 
   source = "./modules/lxc"
 
