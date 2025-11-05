@@ -45,6 +45,12 @@ resource "proxmox_virtual_environment_vm" "proxmox_vm" {
     }
   }
 
+  lifecycle {
+    ignore_changes = [
+      initialization[0].user_account[0].keys
+    ]
+  }
+
   provisioner "remote-exec" {
     inline = ["/usr/bin/cloud-init status --wait; echo ${var.name} is online at ${local.vm_ip}!"]
 
