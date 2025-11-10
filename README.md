@@ -55,10 +55,13 @@ The technologies currently in use are:
 * Docker
 * Wireguard
 * CloudFlare Tunnels
+* Lets Encrypt
 
 # To-Do List 
   This list is not comprehensive, as I'm sure I'm not thinking of things
   - [ ] Configure certificate management
+    - [x] Configure certs for Proxmox nodes
+    - [ ] Configure certs for services
   - [ ] Deploy Vaultwarden
   - [ ] Deploy HomeAssistant
   - [ ] Deploy Immich
