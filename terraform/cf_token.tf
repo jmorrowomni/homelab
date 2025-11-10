@@ -52,8 +52,8 @@ resource "cloudflare_api_token" "acme_dns" {
   }
 }
 
-# output "acme_dns_token" {
-#   value     = cloudflare_api_token.acme_dns.value
-#   sensitive = true
-# }
+output "acme_dns_token" {
+  value     = cloudflare_api_token.acme_dns.value
+  sensitive = true
+}
 

@@ -1,0 +1,88 @@
+---
+- name: Ensure required ACME directories exist
+  ansible.builtin.file:
+    path: /root/.acme
+    state: directory
+    mode: "0700"
+
+- name: Create Cloudflare token file
+  ansible.builtin.copy:
+    content: "CF_Token={{ cf_acme_token }}"
+    dest: "{{ cf_token_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Check to see if ACME account is registered
+  ansible.builtin.stat:
+    path: /etc/pve/priv/acme/default
+  register: acme_token
+
+- name: Register ACME account if not exists
+  ansible.builtin.shell: |
+    echo 'y' | pvenode acme account register {{ acme_account_name }} {{ acme_email }} --directory https://acme-v02.api.letsencrypt.org/directory
+  args:
+    executable: /bin/bash
+  when: not acme_token.stat.exists
+  register: acme_register
+  failed_when:
+    - acme_register.rc != 0
+    - "'Registration successful' not in acme_register.stdout"
+    - "'already exists' not in acme_register.stderr"
+  changed_when: "'Registration successful' in acme_register.stdout"
+
+- name: Check if Cloudflare plugin exists
+  ansible.builtin.command: pvenode acme plugin list
+  register: plugin_check
+  changed_when: false
+  failed_when: false
+
+- name: Remove existing plugin if it exists (to reconfigure)
+  ansible.builtin.command: pvenode acme plugin remove {{ acme_plugin_name }}
+  when: "acme_plugin_name in plugin_check.stdout"
+  register: plugin_remove
+  failed_when: false
+  changed_when: plugin_remove.rc == 0
+
+- name: Configure Cloudflare DNS plugin
+  ansible.builtin.command: >
+    pvenode acme plugin add dns {{ acme_plugin_name }}
+    --api cf
+    --data {{ cf_token_file }}
+  register: plugin_result
+  failed_when:
+    - plugin_result.rc != 0
+    - "'already exists' not in plugin_result.stderr"
+  changed_when: plugin_result.rc == 0
+
+- name: Set ACME account on node
+  ansible.builtin.command: >
+    pvenode config set --acme account={{ acme_account_name }}
+  register: account_set
+  changed_when: true
+
+- name: Add domain with Cloudflare plugin
+  ansible.builtin.command: >
+    pvenode config set
+    --acmedomain0 {{ inventory_hostname }}.gryffindor.house,plugin={{ acme_plugin_name }}
+  register: domain_result
+  changed_when: true
+
+- name: Check current domain configuration
+  ansible.builtin.command: pvenode config get
+  register: config_check
+  changed_when: false
+
+- name: Order ACME certificate
+  ansible.builtin.command: pvenode acme cert order
+  register: cert_result
+  retries: 2
+  delay: 10
+  until: cert_result.rc == 0
+  failed_when: cert_result.rc != 0
+  changed_when: "'Successfully received certificate' in cert_result.stdout"
+
+- name: Debug certificate result
+  ansible.builtin.debug:
+    msg: "{{ cert_result.stdout }}"
+  when: cert_result.stdout is defined

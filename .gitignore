@@ -47,3 +47,7 @@ build/
 
 # Ignore Ansible host variables
 host_vars/
+
+# Ignore Ansible Vault creds
+vault_password
+vault.yml

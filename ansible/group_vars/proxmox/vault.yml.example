@@ -1,0 +1,6 @@
+# This file is ansible-vault encrypted and used in the role
+
+acme_email: "<account email>"
+cf_acme_token: "<created cloudflare acme token>"
+cf_account_id: "cloudflare account id"
+cf_zone_id: "cloudflare zone id"

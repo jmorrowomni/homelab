@@ -1,0 +1,11 @@
+---
+# Default variables for Proxmox ACME role
+
+# Name for the Proxmox ACME account
+acme_account_name: "default"
+
+# DNS plugin name in Proxmox
+acme_plugin_name: "cf"
+
+# Path where the token file will be stored on the Proxmox host
+cf_token_file: "/root/.cloudflare_token"
