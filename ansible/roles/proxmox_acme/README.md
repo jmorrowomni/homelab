@@ -2,6 +2,14 @@
 
 ## This role needs some work, as there is quite a bit more manual effort needed than I would like at this point
 
+### Resources Used:
+* https://geeks.wego.com/manage-cloudflare-using-terraform/
+* https://ddulic.dev/cloudflare-terraform-provider-tips
+* https://forum.proxmox.com/threads/lets-encrypt-non-interactive-setup.65783/
+
+
+
+
 This role:
 1. Writes the Cloudflare API token to a secure file.
 2. Registers an ACME account for Let's Encrypt.
